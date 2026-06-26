@@ -14,6 +14,8 @@ on:
 jobs:
   ci:
     runs-on: self-hosted
+    outputs:
+      appVersion: ${{ steps.package-version.outputs.VERSION }}
     steps:
       - name: code checkout
         uses: actions/checkout@v7
@@ -21,3 +23,12 @@ jobs:
         run: ls -l
       - name: print inputs
         run: echo "project {{ inputs.project }}"
+      - name: Get app version
+        id: package-version
+        run: echo "VERSION=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+      - name: print app version
+        run: echo ${{ steps.package-version.outputs.VERSION }}
+      - name: install dependency
+        run: npm install
+      - name: docker build
+        run: docker build -t 688567292254.dkr.ecr.us-east-1.amazonaws.com/roboshop/catalogue:${{ steps.package-version.outputs.VERSION }} .
